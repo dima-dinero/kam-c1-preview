@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Клуб амбассадоров марки — L'Oréal Professionnel и Matrix</title>
+  <meta name="description" content="Клуб для салонов L'Oréal Professionnel и Matrix: оборот салона, свой менеджер, новинки и поддержка — в одном кабинете.">
+  <meta name="theme-color" content="#EEECF4">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <!-- Link previews. og:image / og:url must become absolute URLs once the site has its address. -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="Клуб амбассадоров марки">
+  <meta property="og:title" content="Клуб амбассадоров марки">
+  <meta property="og:description" content="Одна точка входа. Вся жизнь клуба: оборот салона, свой менеджер, новинки и поддержка — в одном кабинете.">
+  <meta property="og:url" content="https://dima-dinero.github.io/kam-c1-preview/">
+  <meta property="og:image" content="https://dima-dinero.github.io/kam-c1-preview/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Первый экран Клуба амбассадоров марки: телефон с личным кабинетом на фоне стеклянного кольца">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="assets/montserrat.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="vendor/gsap.min.js"></script>
+  <script defer src="glass.js"></script>
+  <script defer src="intro.js"></script>
+  <script defer src="hover.js"></script>
+  <script defer src="haze.js"></script>
+  <script defer src="card.js"></script>
+</head>
+<body>
+  <main>
+    <section class="hero" data-intro="pending" aria-label="Клуб амбассадоров марки">
+
+      <!-- Header: glass pill. The nav collapses into the menu button on narrow screens. -->
+      <header class="masthead glass">
+        <a class="logo-link" href="./" aria-label="Клуб амбассадоров марки — на главную"><img class="logo" src="assets/logo.webp" width="265" height="160" alt=""></a>
+        <nav class="nav" aria-label="Разделы сайта">
+          <button type="button" data-demo>Что даёт клуб</button>
+          <button type="button" data-demo>Менеджер</button>
+          <button type="button" data-demo>Год в клубе</button>
+          <button type="button" data-demo>Условия</button>
+          <button type="button" data-demo>Вопросы</button>
+        </nav>
+        <div class="masthead-actions">
+          <button type="button" class="pill glass-chip" data-demo>Войти</button>
+          <button type="button" class="pill pill-dark masthead-join" data-demo>Хочу в клуб</button>
+          <button type="button" class="menu-button" data-demo aria-label="Меню">
+            <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><path d="M16 20H32M16 28H32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Headline: the left half comes in from the left, the right half from the right. -->
+      <h1 class="headline">
+        <span class="headline-part headline-left"><span class="headline-line">Одна точка</span> <span class="headline-line">входа.</span></span>
+        <span class="headline-part headline-right"><span class="headline-line">Вся жизнь</span> <span class="headline-line">клуба.</span></span>
+      </h1>
+
+      <p class="description">Статус салона, свой менеджер, новинки и&nbsp;поддержка&nbsp;— в&nbsp;одном&nbsp;кабинете</p>
+
+      <div class="hero-actions">
+        <button type="button" class="pill pill-ghost glass" data-demo>Войти в кабинет</button>
+        <button type="button" class="pill pill-dark" data-demo>Хочу в клуб</button>
+      </div>
+
+      <!-- Stage: repeats the video's "cover" box, so the phone stays anchored to the ring on any screen. -->
+      <div class="stage" aria-hidden="true">
+        <img class="stage-still" src="assets/c1.webp" width="2568" height="1448" alt="">
+        <video class="stage-video" muted playsinline preload="auto" poster="assets/intro-poster.webp" disablepictureinpicture disableremoteplayback>
+          <!-- AV1 first (about 4x lighter), H.264 for browsers without AV1 decoding. Same frames, same 3.04 s. -->
+          <source src="assets/intro-av1.mp4" type='video/mp4; codecs="av01.0.12M.08"'>
+          <source src="assets/intro.mp4" type='video/mp4; codecs="avc1.640032"'>
+        </video>
+
+        <div class="phone-rig">
+          <div class="phone">
+            <div class="phone-device">
+            <div class="phone-shell"></div>
+            <span class="phone-key phone-key-action"></span>
+            <span class="phone-key phone-key-up"></span>
+            <span class="phone-key phone-key-down"></span>
+            <span class="phone-key phone-key-power"></span>
+            <div class="phone-body"></div>
+
+            <div class="phone-screen">
+              <!-- Cabinet home. Figures are examples (decision 54). -->
+              <div class="app">
+                <div class="app-status">
+                  <span class="app-time">9:41</span>
+                  <img class="app-status-icons" src="assets/status-bar.svg" width="68" height="13" alt="">
+                </div>
+
+                <div class="app-top">
+                  <img class="app-logo" src="assets/logo.webp" width="265" height="160" alt="">
+                  <div class="app-top-actions">
+                    <span class="app-bell"><img src="assets/bell.svg" width="19" height="19" alt=""></span>
+                    <span class="app-avatar">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.6" r="3.9" fill="#fff"/><path d="M4.6 20.2c.9-3.7 3.9-5.9 7.4-5.9s6.5 2.2 7.4 5.9" fill="#fff"/></svg>
+                    </span>
+                  </div>
+                </div>
+
+                <p class="app-greeting">Добро пожаловать!</p>
+
+                <!-- Club card: metal texture (Weave) under live text; card.js tilts it toward the pointer. -->
+                <div class="app-club">
+                  <div class="app-club-face">
+                    <span class="app-club-title">Клуб амбассадоров марки</span>
+                    <img class="app-club-signature" src="assets/signature.svg" width="142" height="93" alt="">
+                    <span class="app-club-meta">Пример · ID 004512</span>
+                    <span class="app-club-status">Салон в клубе</span>
+                  </div>
+                </div>
+
+                <!-- Figma «Дизайн» 783:86: «Карточка оборота» 836:860 -->
+                <section class="app-card turnover">
+                  <div class="turnover-head">
+                    <span class="turnover-title">Оборот салона</span>
+                    <span class="app-caps">IV квартал · данные на 1 ноября</span>
+                  </div>
+                  <div class="turnover-fact">
+                    <span class="turnover-value">412</span>
+                    <span class="turnover-plan">из 600 тыс. ₽</span>
+                  </div>
+                  <div class="turnover-progress">
+                    <div class="turnover-bar"><span class="turnover-fill" style="--progress: 68.7%"></span></div>
+                    <span class="turnover-left">Осталось 188 тыс. ₽</span>
+                  </div>
+                  <div class="turnover-terms">
+                    <div class="turnover-conditions">
+                      <div class="condition">
+                        <svg class="condition-icon" viewBox="0 0 26 26" aria-hidden="true">
+                          <circle cx="13" cy="13" r="10.75" fill="none" stroke="#8FB4E8" stroke-opacity=".2" stroke-width="2.5"/>
+                          <circle class="condition-ring" cx="13" cy="13" r="10.75" fill="none" stroke="#8FB4E8" stroke-width="2.5" stroke-linecap="round" pathLength="100" stroke-dasharray="69 100" transform="rotate(-90 13 13)"/>
+                        </svg>
+                        <span class="condition-text"><span class="app-caps">План</span><span class="condition-value">69 %</span></span>
+                      </div>
+                      <div class="condition">
+                        <span class="condition-icon condition-orders"><i></i><i class="is-empty"></i></span>
+                        <span class="condition-text"><span class="app-caps">Заказы</span><span class="condition-value">1 из 2</span></span>
+                      </div>
+                    </div>
+                    <p class="turnover-note">Квартал засчитывается, когда выполнен план и&nbsp;сделано минимум 2&nbsp;заказа</p>
+                  </div>
+                </section>
+
+                <!-- Figma «Дизайн» 783:86: «Кольца года» 836:895. Ring geometry is copied from the Figma vectors. -->
+                <section class="app-card year-rings">
+                  <svg class="rings" viewBox="0 0 180 180" aria-hidden="true">
+                    <g fill="none" stroke-width="12" stroke-linecap="round">
+                      <circle cx="90" cy="90" r="82" stroke="#C98BE0" stroke-opacity=".16"/>
+                      <circle cx="90" cy="90" r="66" stroke="#8FB4E8" stroke-opacity=".2"/>
+                      <circle cx="90" cy="90" r="50" stroke="#ADB0EC" stroke-opacity=".22"/>
+                      <!-- Year · 92 % -->
+                      <path transform="translate(1.987 2.225)" stroke="#C98BE0" d="M94.0044 6.00027C133.925 8.92727 165.9 40.2493 169.649 80.1013C173.397 119.954 147.825 156.689 109.149 167.009C70.4744 177.329 29.9994 158.217 13.3964 121.794C-3.20759 85.3713 8.9124 42.2843 42.0694 19.8583"/>
+                      <!-- Quarter · 69 % -->
+                      <path transform="translate(25.664 18.276)" stroke="#8FB4E8" d="M70.3282 6.00039C101.778 8.86739 126.791 33.6124 129.995 65.0304C133.2 96.4484 113.698 125.734 83.4742 134.891C53.2502 144.049 20.7742 130.512 6.0012 102.599"/>
+                      <!-- Quarters: I counted, II missed, III counted, IV in progress -->
+                      <g transform="translate(34 34)">
+                        <path stroke="#9C8FE3" d="M66.911 7.205C85.81 11.431 100.569 26.19 104.795 45.089"/>
+                        <path stroke="#CFCBDD" transform="rotate(90 56 56)" d="M66.911 7.205C85.81 11.431 100.569 26.19 104.795 45.089"/>
+                        <path stroke="#9C8FE3" transform="rotate(180 56 56)" d="M66.911 7.205C85.81 11.431 100.569 26.19 104.795 45.089"/>
+                        <path stroke="#9AA0E4" stroke-width="2.5" transform="rotate(270 56 56)" d="M62.234 6.39C84.905 9.239 102.761 27.095 105.61 49.766"/>
+                      </g>
+                    </g>
+                    <g class="rings-labels" font-size="11" text-anchor="middle" dominant-baseline="central">
+                      <text x="111" y="68.5">I</text><text x="111.5" y="111.5">II</text><text x="69" y="111.5">III</text><text x="69" y="68.5" class="is-current">IV</text>
+                    </g>
+                  </svg>
+                  <div class="rings-legend">
+                    <span><span class="app-caps"><i style="--dot: #C98BE0"></i>Год</span><b>2,2 из 2,4 млн ₽</b></span>
+                    <span><span class="app-caps"><i style="--dot: #9C8FE3"></i>Кварталы</span><b>2 из 4 засчитано</b></span>
+                  </div>
+                  <div class="rings-support">
+                    <span class="rings-button">Активировать поддержку</span>
+                    <span class="rings-hint">Загорится, когда IV квартал будет засчитан</span>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="phone-island"></div>
+            <div class="phone-glare"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <dialog class="preview-dialog" aria-labelledby="preview-dialog-title">
+    <h2 id="preview-dialog-title"></h2>
+    <p>Этот черновик показывает анимацию первого экрана.</p>
+    <form method="dialog">
+      <button type="submit" class="pill pill-dark">Вернуться</button>
+    </form>
+  </dialog>
+</body>
+</html>

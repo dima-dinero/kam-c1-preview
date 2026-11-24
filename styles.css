@@ -1,0 +1,835 @@
+@font-face {
+  font-family: Montserrat;
+  src: url("assets/montserrat.woff2") format("woff2"); /* variable 100–900, subset: Latin, Cyrillic, punctuation, ₽ №; original TTF in masters/ */
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  font-family: Montserrat, Arial, sans-serif;
+  color: #171321;
+  background: #f2f0f3;
+  /* Proportions of the scene: the still / video frame and the phone in it (Figma 797:366). */
+  --scene-ratio: 1.7768;
+  --ink: #171321;
+  --ink-soft: #403852;
+  --button-dark: #0d0d0d;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { padding: 12px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid #402665; outline-offset: 4px; }
+img, svg, video { display: block; }
+
+/* ---------- Hero box ---------- */
+
+.hero {
+  /* Hero is a size container: everything inside scales from its width (cqw) and height (cqh). */
+  container: hero / size;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  overflow: clip; /* clip, not hidden: focus or scrollIntoView can never scroll the scene inside */
+  width: 100%;
+  /* Full screen height: hero + main padding (12 + 12) = 100svh, no scroll. */
+  height: max(480px, calc(100svh - 24px));
+  border-radius: 32px;
+  background: #b8b5cf;
+  /*
+   * Sizes follow Figma 1440 up to that width. Wider, they keep growing, but
+   * slowly: "base × (1 + k × extra width)" with k = 0.25–0.35, each with a cap.
+   * The layout stays edge to edge, as in the mock-up.
+   */
+  --gutter: clamp(24px, 3.67cqw, 88px);
+}
+
+/* ---------- Stage: background video + phone ---------- */
+
+/* Hero width in px, for elements inside the stage (their own cqw is the stage). */
+@property --hero-w { syntax: "<length>"; inherits: true; initial-value: 1416px; }
+
+.stage {
+  /* Same box as `object-fit: cover` of the video, so the phone always sits in the ring. */
+  container: stage / inline-size;
+  --hero-w: 100cqw;
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 50%;
+  width: max(100cqw, 100cqh * var(--scene-ratio));
+  aspect-ratio: 1672 / 941;
+  translate: -50% -50%;
+}
+
+.stage-still, .stage-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/*
+ * A tiny rotation keeps Chromium on Windows from promoting the video to a hardware overlay.
+ * Otherwise the glass appearing over it can switch the video renderer and flash the whole
+ * background. The rotation moves the edge by less than 0.04 CSS px on a 4K-wide stage.
+ */
+.stage-video { opacity: 0; transform: rotate(.001deg); }
+.stage-video.is-visible { opacity: 1; }
+/*
+ * While the video is shown, hide the still under it. Where the video is semi-transparent
+ * (soft mask edges on phones) the still's final ring otherwise shows through as a ghost circle.
+ */
+.stage:has(.stage-video.is-visible) .stage-still { visibility: hidden; }
+/* The poster is the first video frame. Keep the final frame hidden while scripts start. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .hero:is([data-intro="pending"], [data-intro="loading"]) .stage-still { visibility: hidden; }
+  .hero[data-intro="pending"] .stage-video { opacity: 1; }
+}
+/*
+ * No video→still swap at the end of the intro: the video is 2568 px now, as sharp as the still,
+ * and on a real GPU the decoded video and the WebP still differ in colour/brightness, so the
+ * swap read as a second, brighter layer appearing at the end. The last video frame stays.
+ */
+
+.phone-rig {
+  position: absolute;
+  left: 50%;
+  top: 28.54%;
+  width: min(25.7%, 260px + .0989 * var(--hero-w), 500px); /* 400 at 1416, ~447 at 1900 */
+  translate: -50% 0;
+  perspective: min(90cqw, 1400px);
+  perspective-origin: 50% 20%;
+  pointer-events: none;
+}
+
+/* ---------- Phone mockup: 400 × 868 in Figma, every size is in --u = 1 Figma px ---------- */
+
+.phone {
+  container: phone / inline-size;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 400 / 868;
+  transform-origin: 50% 75%;
+  will-change: transform;
+  --u: calc(100cqw / 400);
+}
+/*
+ * After the intro the phone leaves its GPU layer. With will-change (and GSAP's final
+ * translate3d(0,0,0)) Chromium keeps it as a separate bitmap at a fractional offset and
+ * the screen text and icons look soft. The final transform is identity, so this only sharpens.
+ */
+.hero:is([data-intro="ready"], [data-intro="reduced"]) .phone { transform: none !important; will-change: auto; }
+
+.phone-device { position: absolute; inset: 0; }
+
+.phone-shell {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(66 * var(--u));
+}
+.phone-shell {
+  background: linear-gradient(114.74deg, #d6d3db 0%, #8f8c96 18%, #eceaf0 38%, #9c99a3 62%, #d2cfd6 100%);
+}
+
+.phone-key {
+  position: absolute;
+  left: calc(-3 * var(--u));
+  width: calc(3 * var(--u));
+  border-radius: calc(1.5 * var(--u));
+  background: #8f8c96;
+}
+.phone-key-action { top: calc(150 * var(--u)); height: calc(30 * var(--u)); }
+.phone-key-up { top: calc(210 * var(--u)); height: calc(60 * var(--u)); }
+.phone-key-down { top: calc(284 * var(--u)); height: calc(60 * var(--u)); }
+.phone-key-power { left: 100%; top: calc(240 * var(--u)); height: calc(96 * var(--u)); }
+
+.phone-body {
+  position: absolute;
+  inset: calc(4 * var(--u));
+  border-radius: calc(62 * var(--u));
+  background: #0a0a0c;
+}
+
+.phone-screen, .phone-glare {
+  position: absolute;
+  inset: calc(15 * var(--u));
+  border-radius: calc(52 * var(--u));
+}
+
+.phone-screen {
+  overflow: hidden;
+  background: #eeecf4; /* cabinet background, decision 54 */
+}
+
+.phone-glare {
+  background: linear-gradient(104.44deg, rgb(255 255 255 / 16%) 0%, rgb(255 255 255 / 0%) 36.84%);
+}
+
+.phone-island {
+  position: absolute;
+  left: calc(144 * var(--u));
+  top: calc(26 * var(--u));
+  width: calc(112 * var(--u));
+  height: calc(33 * var(--u));
+  border-radius: calc(16.5 * var(--u));
+  background: #000;
+}
+
+/* ---------- Cabinet screen inside the phone ---------- */
+
+.app {
+  /* --k = 1 px of the 375 cabinet mock-up in Figma (783:86), scaled to this screen. */
+  --k: calc(.9413 * var(--u));
+  display: flex;
+  flex-direction: column;
+  padding: 0 calc(15.06 * var(--u));
+  color: var(--ink);
+  font-size: calc(12 * var(--u));
+  line-height: 1.22;
+}
+
+.app-status {
+  position: relative;
+  height: calc(55.5 * var(--u));
+  margin: 0 calc(-15.06 * var(--u));
+}
+.app-time {
+  position: absolute;
+  left: calc(41.42 * var(--u));
+  top: calc(16 * var(--u));
+  font-size: calc(15.06 * var(--u));
+  font-weight: 600;
+}
+.app-status-icons {
+  position: absolute;
+  left: calc(273.03 * var(--u));
+  top: calc(19.77 * var(--u));
+  width: calc(67.79 * var(--u));
+  height: auto;
+}
+
+.app-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(41.42 * var(--u));
+  margin-right: calc(-3.76 * var(--u));
+}
+.app-logo { width: calc(52.72 * var(--u)); height: calc(32.01 * var(--u)); object-fit: contain; }
+.app-top-actions { display: flex; gap: calc(7.54 * var(--u)); }
+.app-bell, .app-avatar {
+  display: grid;
+  place-items: center;
+  width: calc(41.42 * var(--u));
+  height: calc(41.42 * var(--u));
+  border-radius: 50%;
+}
+.app-bell { background: #fff; }
+.app-bell img { width: calc(18.83 * var(--u)); height: auto; }
+.app-avatar { background: linear-gradient(135deg, #e9b6f0, #b9acf3 55%, #9fd3f1); } /* soft pearl of the logo */
+.app-avatar svg { width: calc(24 * var(--k)); height: calc(24 * var(--k)); }
+
+.app-greeting {
+  margin: calc(17.9 * var(--u)) 0 0 calc(3.77 * var(--u));
+  font-size: calc(26.36 * var(--u));
+  font-weight: 600;
+  letter-spacing: calc(-0.53 * var(--u));
+  white-space: nowrap;
+}
+
+/*
+ * Club card: a light pearl metal card. The surface is a Weave texture
+ * (assets/club-card.webp, no text in it); title, ID, status and the signature
+ * are live text on top, printed in dark ink with a hairline highlight under
+ * each letter, as if stamped into the metal. card.js tilts the face toward
+ * the pointer and moves the glare (--rx, --ry, --gx, --gy, --glare, --shift).
+ */
+.app-club {
+  position: relative;
+  flex: none;
+  height: calc(201.48 * var(--u));
+  margin-top: calc(18.8 * var(--u));
+  border-radius: calc(22.6 * var(--u));
+  /* Resting light: a soft glare at the upper left, as on the texture. */
+  --rx: 0deg;
+  --ry: 0deg;
+  --gx: 22%;
+  --gy: 8%;
+  --glare: .5;
+  --shift: 0;
+}
+.app-club.is-interactive { pointer-events: auto; } /* the phone rig ignores the pointer, the card does not */
+
+.app-club-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  /* Light on the metal, under the ink: a soft specular spot and a faint pearl
+     band of the logo colours that slides across as the card turns. */
+  background:
+    radial-gradient(circle at var(--gx) var(--gy), rgb(255 255 255 / calc(var(--glare) * 50%)), rgb(255 255 255 / 0%) 48%),
+    linear-gradient(112deg, rgb(255 255 255 / 0%) 32%,
+      rgb(229 140 240 / calc(var(--glare) * 55%)) 43%, rgb(182 164 246 / calc(var(--glare) * 55%)) 50%,
+      rgb(134 205 243 / calc(var(--glare) * 55%)) 57%, rgb(255 255 255 / 0%) 68%)
+      calc(50% + var(--shift) * 35%) 50% / 260% 100% no-repeat,
+    url("assets/club-card.webp") center / cover,
+    linear-gradient(149deg, #ece4f3 0%, #dcd8f2 55%, #d3e3f2 100%); /* while the texture loads */
+  background-blend-mode: normal, soft-light, normal, normal;
+  color: #1f1a2e;
+  box-shadow:
+    0 calc(.5 * var(--u)) calc(1.5 * var(--u)) rgb(46 34 84 / 14%),
+    0 calc(10 * var(--u)) calc(24 * var(--u)) calc(-8 * var(--u)) rgb(69 51 120 / 30%);
+}
+/* The 3D transform is set only while the card moves: at rest the face is
+   flat in the phone's layer and is painted as crisp as the rest of the screen. */
+.app-club.is-tilting .app-club-face {
+  transform: perspective(calc(760 * var(--u))) rotateX(var(--rx)) rotateY(var(--ry));
+}
+
+/* Thin metal edge: a light rim, brighter on the side that faces the light. */
+.app-club-face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: calc(1.1 * var(--u));
+  background: linear-gradient(calc(150deg + var(--ry) * 3 - var(--rx) * 2),
+    rgb(255 255 255 / 95%) 0%, rgb(255 255 255 / 35%) 28%,
+    rgb(150 132 205 / 35%) 58%, rgb(255 255 255 / 75%) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+.app-club-face > * {
+  position: absolute;
+  left: calc(20.71 * var(--u));
+  white-space: nowrap;
+  /* Stamped into metal: a hairline highlight under the letters. */
+  text-shadow: 0 calc(.6 * var(--u)) 0 rgb(255 255 255 / 55%);
+}
+.app-club-title { top: calc(18.83 * var(--u)); font-size: calc(12.24 * var(--u)); font-weight: 600; letter-spacing: .01em; }
+.app-club-signature {
+  left: calc(178.88 * var(--u));
+  top: calc(41.42 * var(--u));
+  width: calc(141.22 * var(--u));
+  height: auto;
+  /* The signature file is white: printed here in the same dark ink. */
+  filter: brightness(0) drop-shadow(0 calc(.6 * var(--u)) 0 rgb(255 255 255 / 70%));
+  opacity: .86;
+}
+.app-club-meta { top: calc(133.69 * var(--u)); font-size: calc(12.24 * var(--u)); font-weight: 500; color: #3f3852; }
+.app-club-status { top: calc(152.52 * var(--u)); font-size: calc(22.6 * var(--u)); font-weight: 600; }
+
+/* Blocks below follow Figma «Дизайн» 783:86 one to one, in --k units. */
+.app-card {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  margin-top: calc(16 * var(--k));
+  padding: calc(20 * var(--k));
+  border-radius: calc(28 * var(--k));
+  background: #fff;
+  box-shadow: 0 calc(12 * var(--k)) calc(20 * var(--k)) rgb(69 51 120 / 5%);
+}
+
+.app-caps {
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--k));
+  color: #6b6680;
+  font-size: calc(11 * var(--k));
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.turnover { gap: calc(20 * var(--k)); }
+.turnover-head { display: grid; gap: calc(6 * var(--k)); }
+.turnover-title { font-size: calc(20 * var(--k)); font-weight: 500; line-height: 1.2; letter-spacing: -.01em; }
+
+.turnover-fact { display: flex; align-items: baseline; gap: calc(10 * var(--k)); white-space: nowrap; }
+.turnover-value { font-size: calc(56 * var(--k)); font-weight: 300; line-height: 1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.turnover-plan { color: #6b6680; font-size: calc(18 * var(--k)); font-weight: 300; line-height: 1.4; letter-spacing: -.01em; }
+
+.turnover-progress { display: grid; gap: calc(8 * var(--k)); }
+.turnover-bar {
+  position: relative;
+  height: calc(8 * var(--k));
+  border-radius: calc(4 * var(--k));
+  background: #ece8f3;
+}
+.turnover-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--progress);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #e58cf0, #b6a4f6 50%, #86cdf3);
+}
+.turnover-left { font-size: calc(13 * var(--k)); font-weight: 500; line-height: 1.4; }
+
+.turnover-terms { display: grid; gap: calc(10 * var(--k)); }
+.turnover-conditions { display: flex; gap: calc(8 * var(--k)); }
+.condition {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: calc(8 * var(--k));
+  height: calc(52 * var(--k));
+  padding: 0 calc(12 * var(--k));
+  border-radius: calc(16 * var(--k));
+  background: #f4f1f9;
+}
+.condition-icon { position: relative; flex: none; width: calc(26 * var(--k)); height: calc(26 * var(--k)); }
+.condition-orders i {
+  position: absolute;
+  top: calc(2 * var(--k));
+  left: calc(3 * var(--k));
+  width: calc(9 * var(--k));
+  height: calc(22 * var(--k));
+  border-radius: calc(4.5 * var(--k));
+  background: #9c8fe3;
+}
+.condition-orders i.is-empty { left: calc(15 * var(--k)); background: none; border: calc(1.5 * var(--k)) dashed #9c8fe3; }
+.condition-text { display: grid; gap: calc(2 * var(--k)); }
+.condition-text .app-caps { font-size: calc(10 * var(--k)); letter-spacing: .12em; }
+.condition-value { font-size: calc(14 * var(--k)); font-weight: 500; line-height: 1.4; }
+.turnover-note { margin: 0; color: #6b6680; font-size: calc(12 * var(--k)); line-height: 1.4; }
+
+.year-rings { align-items: center; gap: calc(16 * var(--k)); padding-block: calc(24 * var(--k)); }
+.rings { width: calc(180 * var(--k)); height: calc(180 * var(--k)); overflow: visible; }
+.rings-labels { fill: #6b6680; font-family: Montserrat, Arial, sans-serif; }
+.rings-labels .is-current { fill: var(--ink); font-weight: 500; }
+.rings-legend { display: grid; grid-template-columns: 1fr 1fr; gap: calc(16 * var(--k)); width: 100%; }
+.rings-legend > span { display: grid; gap: calc(2 * var(--k)); }
+.rings-legend .app-caps { font-size: calc(10 * var(--k)); letter-spacing: .12em; }
+.rings-legend i { width: calc(6 * var(--k)); height: calc(6 * var(--k)); border-radius: 50%; background: var(--dot); }
+.rings-legend b { font-size: calc(14 * var(--k)); font-weight: 500; line-height: calc(18 * var(--k)); white-space: nowrap; }
+.rings-support { display: grid; gap: calc(10 * var(--k)); width: 100%; margin-top: calc(8 * var(--k)); } /* 16 + 8 = 24 to the legend */
+.rings-button {
+  display: grid;
+  place-items: center;
+  height: calc(52 * var(--k));
+  padding: 0 calc(20 * var(--k));
+  border-radius: 999px;
+  background: #f4f1f9;
+  color: #6b6680;
+  font-size: calc(15 * var(--k));
+  font-weight: 500;
+  line-height: 1.4;
+}
+.rings-hint { color: #6b6680; font-size: calc(12 * var(--k)); line-height: 1.4; text-align: center; }
+
+/* ---------- Header ---------- */
+
+.masthead {
+  position: absolute;
+  z-index: 4;
+  top: clamp(12px, 1.83cqh, 20px);
+  left: var(--gutter);
+  right: var(--gutter);
+  /*
+   * Three columns: logo | nav | buttons. The side columns share the free space
+   * equally, so the nav sits in the exact centre of the pill. Padding is equal
+   * on both sides (12, the buttons' inset); the logo gets its extra inset itself.
+   */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 16px;
+  height: clamp(72px, 54px + 1.27cqw, 84px);
+  padding: 0 12px;
+  border-radius: 999px;
+}
+
+.logo-link {
+  grid-column: 1;
+  justify-self: start;
+  display: block;
+  margin-left: clamp(12px, 6px + .42cqw, 20px); /* 12 padding + this = 24–32 from the pill edge */
+  border-radius: 12px;
+}
+.logo-link:focus-visible { outline: 2px solid #402665; outline-offset: 4px; }
+.logo {
+  width: clamp(73px, 54.75px + 1.29cqw, 86px);
+  height: auto;
+  aspect-ratio: 265 / 160;
+  object-fit: contain;
+}
+
+.nav {
+  grid-column: 2;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 1.98cqw, 28px);
+}
+
+.nav button {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: clamp(15px, 11.25px + .265cqw, 17px);
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+/* Flowing glass pill under the hovered link (hover.js sets --x / --w). */
+.nav button { position: relative; z-index: 1; }
+.nav-pill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: var(--w, 0px);
+  height: 48px;
+  margin-top: -24px;
+  border-radius: 999px;
+  /* Clear glass: almost no fill; the shape comes from the rim light and a sheen on top. */
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 42%) 0%, rgb(255 255 255 / 8%) 55%, rgb(255 255 255 / 18%) 100%),
+    rgb(255 255 255 / 10%);
+  box-shadow:
+    inset 1.5px 1.5px 1px -1px rgb(255 255 255 / 100%),   /* rim light, top left */
+    inset -1.5px -1.5px 1px -1px rgb(255 255 255 / 85%),  /* rim light, bottom right */
+    inset 0 0 0 1px rgb(255 255 255 / 40%),              /* glass edge */
+    inset 0 -8px 14px -10px rgb(255 255 255 / 70%),       /* light pooled at the bottom */
+    0 6px 16px -8px rgb(46 30 84 / 22%);                  /* lifts off the bar */
+  opacity: 0;
+  translate: var(--x, 0px) 0;
+  scale: .9;
+  pointer-events: none;
+  /* Slight overshoot, like a drop of glass settling. */
+  transition:
+    translate .45s cubic-bezier(.3, 1.25, .45, 1),
+    width .45s cubic-bezier(.3, 1.25, .45, 1),
+    scale .35s cubic-bezier(.3, 1.25, .45, 1),
+    opacity .25s ease;
+}
+.nav.has-pill .nav-pill { opacity: 1; scale: 1; }
+/* First appearance: grow in place instead of flying over from the last link. */
+.nav.pill-jump .nav-pill { transition: opacity .25s ease, scale .35s cubic-bezier(.3, 1.25, .45, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .nav-pill { transition: opacity .2s ease; }
+}
+
+/* Hover: no underline and no dimming of the other links — only the glass pill. */
+
+.masthead-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 8px; }
+
+.menu-button {
+  display: none;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #16131f;
+  color: #fff;
+}
+.menu-button:hover { background: #363238; }
+
+/* ---------- Liquid Glass (navbar, secondary buttons) ----------
+ * Tier 1, every browser: frosted backdrop + tint + rim light from inset shadows.
+ * Tier 2, Chromium only: glass.js adds rim refraction (SVG displacement map)
+ * and sets html[data-glass="refract"]; then the frost gets lighter, as in Apple's clear glass.
+ */
+.glass {
+  --glass-tint: rgb(255 255 255 / 30%);
+  --glass-tint-frost: rgb(255 255 255 / 52%);
+  position: relative; /* keeps .masthead absolute: it overrides this */
+  border: 0;
+  background: var(--glass-tint-frost);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+  box-shadow:
+    inset 1.5px 1.5px 1px -1px rgb(255 255 255 / 95%),   /* rim light, top left */
+    inset -1.5px -1.5px 1px -1px rgb(255 255 255 / 70%), /* rim light, bottom right */
+    inset 0 0 0 1px rgb(255 255 255 / 28%),             /* thin glass edge */
+    inset 0 -10px 18px -14px rgb(255 255 255 / 55%),     /* light gathered at the bottom */
+    0 6px 24px -6px rgb(46 30 84 / 16%);                 /* soft lift off the scene */
+}
+/* The nav needs a denser tint to keep its text readable over the rings. */
+.masthead.glass { position: absolute; --glass-tint: rgb(255 255 255 / 46%); --glass-tint-frost: rgb(255 255 255 / 62%); }
+html[data-glass="refract"] .glass {
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-filter) saturate(175%) brightness(1.04);
+  backdrop-filter: var(--glass-filter) saturate(175%) brightness(1.04);
+}
+.pill.glass { background: var(--glass-tint-frost); color: var(--button-dark); transition: background-color .2s ease, transform .2s ease; }
+html[data-glass="refract"] .pill.glass { background: var(--glass-tint); }
+.pill.glass:hover { background: rgb(255 255 255 / 58%); }
+html[data-glass="refract"] .pill.glass:hover { background: rgb(255 255 255 / 44%); }
+
+/*
+ * A control sitting on a glass bar (header «Войти»): no second backdrop pass,
+ * just a brighter glass drop with the same rim light, so it reads as part of the bar.
+ */
+.glass-chip {
+  border: 0;
+  background: linear-gradient(180deg, rgb(255 255 255 / 78%), rgb(255 255 255 / 48%));
+  color: var(--button-dark);
+  box-shadow:
+    inset 1px 1px 1px -.5px rgb(255 255 255 / 100%),
+    inset -1px -1px 1px -.5px rgb(255 255 255 / 80%),
+    inset 0 0 0 1px rgb(255 255 255 / 35%),
+    0 1px 2px rgb(46 30 84 / 8%),
+    0 4px 12px -4px rgb(46 30 84 / 12%);
+}
+.glass-chip:hover { background: linear-gradient(180deg, rgb(255 255 255 / 92%), rgb(255 255 255 / 66%)); }
+
+/* No backdrop support, or the person asked for less transparency: solid and readable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgb(255 255 255 / 88%); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: rgb(255 255 255 / 92%); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* ---------- Buttons ---------- */
+
+.pill {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  height: 48px;
+  padding: 0 24px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  /* Room for the hover light: it sits behind the label, inside the pill. */
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    background-color .25s ease,
+    box-shadow .35s ease,
+    transform .35s cubic-bezier(.3, 1.25, .45, 1);
+}
+/* Hover: soft light under the pointer (hover.js sets --mx / --my). No lift, no scaling. */
+.pill::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle 70px at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 70%), transparent);
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pill:hover::before { opacity: 1; }
+}
+.pill:active { transform: scale(.98); transition-duration: .1s; }
+/* On the dark button the light is the logo's pearl, so it glows instead of greying. */
+.pill-dark::before {
+  background: radial-gradient(circle 80px at var(--mx, 50%) var(--my, 50%), rgb(229 140 240 / 42%), rgb(182 164 246 / 24%) 45%, rgb(134 205 243 / 0%) 80%);
+}
+.hero .pill {
+  height: clamp(48px, 36px + .85cqw, 56px);
+  padding-inline: clamp(24px, 18px + .42cqw, 30px);
+  font-size: clamp(15px, 11.25px + .265cqw, 17px);
+}
+.pill-ghost { border-color: transparent; background: rgb(255 255 255 / 55%); color: var(--button-dark); }
+.pill-ghost:hover { background: rgb(255 255 255 / 85%); }
+.pill-dark { background: var(--button-dark); color: #fff; }
+.pill-dark:hover { background: #1c1824; box-shadow: 0 8px 24px -8px rgb(120 90 200 / 45%); }
+
+/* Hero copy is decoration of the scene: it can't be selected and lets the pointer through. */
+.headline, .description {
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- Copy: desktop composition (Figma 797:366, 1416 × 876) ---------- */
+
+.headline {
+  position: absolute;
+  z-index: 3;
+  top: 37.67%;
+  left: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(34px, min(5.08cqw, 46.8px + 1.78cqw), 100px); /* Figma: 72 at 1416, ~81 at 1900 */
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.035em;
+  pointer-events: none;
+}
+.headline-part { display: flex; flex-direction: column; }
+.headline-right { align-items: flex-end; text-align: right; }
+.headline-line { display: block; white-space: nowrap; }
+
+.description {
+  position: absolute;
+  z-index: 3;
+  left: var(--gutter);
+  bottom: clamp(24px, 5.94cqh, 64px);
+  /*
+   * Two lines (22.5em follows the font size), but never closer than 24px to the
+   * phone: its width is the same formula as .phone-rig (25.7 % of the stage, capped).
+   */
+  width: min(22.5em, 50cqw - var(--gutter) - 24px - min(.257 * max(100cqw, 177.68cqh), 260px + 9.89cqw, 500px) / 2);
+  margin: 0;
+  /* Same ink as the headline and Medium: the thin grey text got lost on the shiny floor. */
+  color: var(--ink);
+  font-size: clamp(16px, min(1.41cqw, 14px + .381cqw), 24px); /* 20 at 1416 (was 18) */
+  font-weight: 500;
+  line-height: 1.45;
+  text-wrap: balance; /* two even lines */
+}
+
+.hero-actions {
+  position: absolute;
+  z-index: 3;
+  right: var(--gutter);
+  bottom: clamp(24px, 5.94cqh, 64px);
+  display: flex;
+  gap: 12px;
+}
+
+/* Hidden until the intro starts, so nothing flashes before the first frame. */
+@media (scripting: enabled) {
+  .hero[data-intro="pending"] :is(.masthead, .headline-line, .description, .hero-actions > *, .phone) {
+    opacity: 0;
+    animation: intro-failsafe 0s 4s forwards;
+  }
+}
+@keyframes intro-failsafe { to { opacity: 1; } }
+
+/* ---------- Draft dialog for header and hero buttons ---------- */
+
+.preview-dialog {
+  width: min(calc(100% - 32px), 430px);
+  padding: 28px;
+  border: 0;
+  border-radius: 24px;
+  background: #f8f6fa;
+  color: inherit;
+  box-shadow: 0 12px 60px rgb(25 17 38 / 26%);
+}
+.preview-dialog::backdrop { background: rgb(23 19 33 / 47%); }
+.preview-dialog h2 { margin: 0; font-size: 22px; font-weight: 600; }
+.preview-dialog p { margin: 14px 0 24px; font-size: 16px; line-height: 1.5; }
+
+/* ---------- Medium widths: nav goes into the menu button ---------- */
+
+@media (max-width: 1180px) { /* below this the buttons are wider than the side column and would push the nav off-centre */
+  .nav { display: none; }
+  .menu-button { display: grid; place-items: center; }
+}
+
+/* Narrow desktop: the two buttons stack, so they never run into the phone. */
+@container hero (max-width: 1150px) {
+  .hero-actions { flex-direction: column-reverse; gap: 8px; width: 200px; }
+}
+
+/* ---------- Phone layout (Figma 599:158): one column, phone below the buttons ---------- */
+
+@media (max-width: 720px), (max-width: 1100px) and (max-aspect-ratio: 4 / 5) {
+  main { padding: 8px; }
+
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: max(600px, calc(100svh - 16px));
+    padding: 108px 20px 0;
+    border-radius: 28px;
+    background: linear-gradient(#b6b3cd, #bab7d2 60%, #c3c0d8);
+    --gutter: 8px;
+  }
+
+  .masthead {
+    top: 8px;
+    height: 64px;
+    padding: 0 8px;
+  }
+  .logo-link { margin-left: 12px; } /* 20 from the pill edge */
+
+  .headline {
+    position: relative;
+    inset: auto;
+    flex-direction: column;
+    align-items: center;
+    max-width: 640px;
+    font-size: clamp(24px, 9.4cqw, 44px);
+    line-height: 1.08;
+    letter-spacing: -.03em;
+    text-align: center;
+  }
+  .headline-part, .headline-right { display: block; text-align: center; }
+  .headline-line { display: inline-block; }
+
+  .description {
+    position: relative;
+    inset: auto;
+    width: auto;
+    max-width: 440px;
+    margin-top: 16px;
+    font-size: clamp(15px, 4.9cqw, 19px);
+    text-align: center;
+  }
+
+  .hero-actions {
+    position: relative;
+    inset: auto;
+    flex-direction: column-reverse;
+    gap: 8px;
+    width: 100%;
+    max-width: 380px;
+    margin-top: 24px;
+  }
+  .hero-actions .pill { width: 100%; }
+
+  .stage {
+    /* Here the stage follows the buttons; the phone top lands 28px below them. */
+    --stage-w: min(305cqw, 1200px);
+    position: relative;
+    flex: none;
+    left: auto;
+    top: auto;
+    width: var(--stage-w);
+    margin-top: calc(28px - var(--stage-w) * .16063);
+    translate: none;
+  }
+  /* Soft edges, so the video blends into the hero background above and below it. */
+  .stage-still, .stage-video {
+    -webkit-mask-image: linear-gradient(transparent, #000 26%, #000 86%, transparent);
+    mask-image: linear-gradient(transparent, #000 26%, #000 86%, transparent);
+  }
+}
+
+@media (max-width: 720px) {
+  .masthead-join { display: none; }
+}
+
+@media (max-width: 360px) {
+  .hero { padding-inline: 12px; }
+  .logo-link { margin-left: 6px; } /* 14 from the pill edge */
+  .logo { width: 64px; }
+  .masthead .glass-chip { padding-inline: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; }
+  .stage-video { display: none !important; }
+}
